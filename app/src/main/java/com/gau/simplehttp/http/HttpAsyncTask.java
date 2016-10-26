@@ -1,19 +1,19 @@
 package com.gau.simplehttp.http;
 
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 
 public class HttpAsyncTask extends AsyncTask<Void, Void, Response> {
 
     private Request request;
+    private HttpURLConnection connection;
     private Request.Callback callback;
     private Exception exception;
 
-    public HttpAsyncTask(Request request, Request.Callback callback) {
+    public HttpAsyncTask(Request request, HttpURLConnection connection, Request.Callback callback) {
+        this.connection = connection;
         this.request = request;
         this.callback = callback;
     }
@@ -21,22 +21,18 @@ public class HttpAsyncTask extends AsyncTask<Void, Void, Response> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        if (request.getCallbackHandler() == null) {
-            Handler handler;
-            if (Thread.currentThread() instanceof HandlerThread) {
-                handler = new Handler();
-            } else {
-                handler = new Handler(Looper.getMainLooper());
-            }
-            request.setCallbackHandler(handler);
-        }
     }
 
     @Override
     protected Response doInBackground(Void... params) {
         try {
-            return request.executeAndWait();
+            if (request != null) {
+                return request.execute();
+            }
         } catch (IOException e) {
+            if (connection != null) {
+                connection.disconnect();
+            }
             exception = e;
         }
         return null;

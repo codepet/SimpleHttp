@@ -6,6 +6,7 @@ public class Response {
     private final String message;
     private final String method;
     private final String contentType;
+    private final int contentLength;
     private final String body;
 
     public Response(Builder builder) {
@@ -13,6 +14,7 @@ public class Response {
         this.message = builder.message;
         this.method = builder.method;
         this.contentType = builder.contentType;
+        this.contentLength = builder.contentLength;
         this.body = builder.body;
     }
 
@@ -28,6 +30,18 @@ public class Response {
         return method;
     }
 
+    public String getContentType() {
+        return contentType;
+    }
+
+    public int getContentLength() {
+        return contentLength;
+    }
+
+    public boolean isSuccessful() {
+        return this.code >= 200 && this.code < 300;
+    }
+
     public String getBody() {
         return body;
     }
@@ -37,6 +51,7 @@ public class Response {
         private String message;
         private String method;
         private String contentType;
+        private int contentLength;
         private String body;
 
         public Builder code(int code) {
@@ -56,6 +71,11 @@ public class Response {
 
         public Builder contentType(String contentType) {
             this.contentType = contentType;
+            return this;
+        }
+
+        public Builder contentLength(int contentLength) {
+            this.contentLength = contentLength;
             return this;
         }
 
