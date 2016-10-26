@@ -71,7 +71,7 @@ public class Request {
         connection.setReadTimeout(READ_TIME_OUT_MILLISECOND);
         connection.setDoInput(true);
         connection.setUseCaches(false);
-        connectHeaders();
+        addHeaders();
         connection.connect();
     }
 
@@ -103,7 +103,7 @@ public class Request {
         connection.setDoInput(true);
         connection.setDoOutput(true);
         connection.setUseCaches(false);
-        connectHeaders();
+        addHeaders();
         connection.connect();
         postBody();
     }
@@ -145,7 +145,7 @@ public class Request {
     /*
      * 设置请求头
      */
-    private void connectHeaders() {
+    private void addHeaders() {
         if (headers != null && headers.size() > 0) {
             for (int i = 0; i < headers.size(); i += 2) {
                 connection.setRequestProperty(headers.get(i), headers.get(i + 1));

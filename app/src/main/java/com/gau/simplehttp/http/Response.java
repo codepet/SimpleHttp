@@ -18,6 +18,17 @@ public class Response {
         this.body = builder.body;
     }
 
+    public Response newResponse(Response response) {
+        return new Builder()
+                .code(response.getCode())
+                .message(response.getMessage())
+                .method(response.getMethod())
+                .contentType(response.getContentType())
+                .contentLength(response.getContentLength())
+                .body(response.getBody())
+                .build();
+    }
+
     public int getCode() {
         return code;
     }
