@@ -9,18 +9,13 @@ public class HttpAsyncTask extends AsyncTask<Void, Void, Response> {
 
     private Request request;
     private HttpURLConnection connection;
-    private Request.Callback callback;
+    private HttpCallback httpCallback;
     private Exception exception;
 
-    public HttpAsyncTask(Request request, HttpURLConnection connection, Request.Callback callback) {
+    public HttpAsyncTask(Request request, HttpURLConnection connection, HttpCallback httpCallback) {
         this.connection = connection;
         this.request = request;
-        this.callback = callback;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
+        this.httpCallback = httpCallback;
     }
 
     @Override
@@ -42,16 +37,16 @@ public class HttpAsyncTask extends AsyncTask<Void, Void, Response> {
     protected void onPostExecute(Response response) {
         super.onPostExecute(response);
         if (response == null) {
-            if (callback != null) {
+            if (httpCallback != null) {
                 if (exception != null) {
-                    callback.onError(exception);
+                    httpCallback.onError(exception);
                 } else {
-                    callback.onError(new Exception("UnKnown Exception"));
+                    httpCallback.onError(new Exception("UnKnown Exception"));
                 }
             }
         } else {
-            if (callback != null) {
-                callback.onComplete(response);
+            if (httpCallback != null) {
+                httpCallback.onComplete(response);
             }
         }
     }

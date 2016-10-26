@@ -4,6 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.gau.simplehttp.http.HttpCallback;
+import com.gau.simplehttp.http.HttpMethod;
 import com.gau.simplehttp.http.Request;
 import com.gau.simplehttp.http.Response;
 
@@ -40,11 +42,11 @@ public class MainActivity extends AppCompatActivity {
 
         Request.Builder build = new Request.Builder()
                 .url("http://10.0.3.2:8080/TestProject/TestServlet")
-                .method(Request.HttpMethod.POST)
+                .method(HttpMethod.POST)
                 .headers("User-Agent", "guochao-1.0")
                 .params("param", "hello world")
-                .json("{\"json\":\"string\"}");
-        Request.newRequest(build, new Request.Callback() {
+                .string("{\"string\":\"string\"}");
+        Request.newRequest(build, new HttpCallback() {
             @Override
             public void onComplete(Response response) {
                 Log.e(TAG, "onComplete/response:" + response.getBody());

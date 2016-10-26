@@ -17,34 +17,40 @@ public class Request {
     private String url;
     private List<String> params;
     private List<String> headers;
-    private String json;
+    private String string;
     private HttpMethod method;
 
     private HttpURLConnection connection;
-    private static Callback mCallback;
+    private static HttpCallback mHttpCallback;
 
     private Request(Builder builder) {
         this.url = builder.url;
         this.params = builder.params;
         this.headers = builder.headers;
         this.method = builder.method;
-        this.json = builder.json;
+        this.string = builder.string;
     }
 
     public static Request newRequest(Builder builder) {
         return newRequest(builder, null);
     }
 
-    public static Request newRequest(Builder builder, Callback callback) {
-        mCallback = callback;
+    public static Request newRequest(Builder builder, HttpCallback httpCallback) {
+        mHttpCallback = httpCallback;
         return new Request(builder);
     }
 
+    /*
+     * 异步请求
+     */
     public void executeAsync() {
-        HttpAsyncTask asyncTask = new HttpAsyncTask(this, connection, mCallback);
+        HttpAsyncTask asyncTask = new HttpAsyncTask(this, connection, mHttpCallback);
         asyncTask.execute();
     }
 
+    /*
+     * 同步请求
+     */
     public Response execute() throws IOException {
         if (method == HttpMethod.POST) {
             post();
@@ -54,6 +60,9 @@ public class Request {
         return response(connection);
     }
 
+    /*
+     * get请求
+     */
     private void get() throws IOException {
         URL requestUrl = new URL(getUrl(url));
         connection = (HttpURLConnection) requestUrl.openConnection();
@@ -66,6 +75,9 @@ public class Request {
         connection.connect();
     }
 
+    /*
+     * get请求拼接url
+     */
     private String getUrl(String url) {
         StringBuilder sb = new StringBuilder();
         sb.append(url).append("?");
@@ -79,6 +91,9 @@ public class Request {
         return sb.toString();
     }
 
+    /*
+     * post请求
+     */
     private void post() throws IOException {
         URL requestUrl = new URL(url);
         connection = (HttpURLConnection) requestUrl.openConnection();
@@ -93,11 +108,17 @@ public class Request {
         postBody();
     }
 
+    /*
+     * post请求上传数据
+     */
     private void postBody() throws IOException {
         postForm();
         postString();
     }
 
+    /*
+     * 上传表单
+     */
     private void postForm() throws IOException {
         if (params != null && params.size() > 0) {
             StringBuilder sb = new StringBuilder();
@@ -108,16 +129,22 @@ public class Request {
                 sb.append("&");
             }
             sb.deleteCharAt(sb.length() - 1);
-            connection.getOutputStream().write(sb.toString().getBytes());
+            connection.getOutputStream().write(sb.toString().getBytes("GBK"));
         }
     }
 
+    /*
+     * 上传字符串，如json字符串
+     */
     private void postString() throws IOException {
-        if (json != null && !json.isEmpty()) {
-            connection.getOutputStream().write(json.getBytes());
+        if (string != null && !string.isEmpty()) {
+            connection.getOutputStream().write(string.getBytes("GBK"));
         }
     }
 
+    /*
+     * 设置请求头
+     */
     private void connectHeaders() {
         if (headers != null && headers.size() > 0) {
             for (int i = 0; i < headers.size(); i += 2) {
@@ -126,6 +153,9 @@ public class Request {
         }
     }
 
+    /*
+     * 获取响应结果
+     */
     private Response response(HttpURLConnection connection) throws IOException {
         Response resp = new Response.Builder()
                 .code(connection.getResponseCode())
@@ -139,6 +169,9 @@ public class Request {
         return resp;
     }
 
+    /*
+     * 获取响应的数据
+     */
     private String getResponseBody(InputStream stream) {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = new BufferedReader(new InputStreamReader(stream));
@@ -154,23 +187,13 @@ public class Request {
         return sb.toString();
     }
 
-    public enum HttpMethod {
-        GET, POST
-    }
-
-    public interface Callback {
-        void onComplete(Response response);
-
-        void onError(Throwable e);
-    }
-
     public static class Builder {
 
         private String url;
         private List<String> params = new ArrayList<>();
         private List<String> headers = new ArrayList<>();
         private HttpMethod method = HttpMethod.GET;
-        private String json;
+        private String string;
 
         public Builder url(String url) {
             if (url == null || url.isEmpty()) {
@@ -197,8 +220,8 @@ public class Request {
             return this;
         }
 
-        public Builder json(String json) {
-            this.json = json;
+        public Builder string(String string) {
+            this.string = string;
             return this;
         }
 
