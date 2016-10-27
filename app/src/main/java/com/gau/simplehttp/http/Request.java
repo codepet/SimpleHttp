@@ -11,8 +11,9 @@ import java.util.List;
 
 public class Request {
 
-    private final static int CONNECT_TIME_OUT_MILLISECOND = 10000;
-    private final static int READ_TIME_OUT_MILLISECOND = 20000;
+    private static final int CONNECT_TIME_OUT_MILLISECOND = 10000;
+    private static final int READ_TIME_OUT_MILLISECOND = 20000;
+    public static final String ENCODING = "UTF-8";
 
     private String url;
     private List<String> params;
@@ -129,7 +130,7 @@ public class Request {
                 sb.append("&");
             }
             sb.deleteCharAt(sb.length() - 1);
-            connection.getOutputStream().write(sb.toString().getBytes("GBK"));
+            connection.getOutputStream().write(sb.toString().getBytes(ENCODING));
         }
     }
 
@@ -138,7 +139,7 @@ public class Request {
      */
     private void postString() throws IOException {
         if (string != null && !string.isEmpty()) {
-            connection.getOutputStream().write(string.getBytes("GBK"));
+            connection.getOutputStream().write(string.getBytes(ENCODING));
         }
     }
 
@@ -172,18 +173,14 @@ public class Request {
     /*
      * 获取响应的数据
      */
-    private String getResponseBody(InputStream stream) {
+    private String getResponseBody(InputStream stream) throws IOException {
         StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+        BufferedReader br = new BufferedReader(new InputStreamReader(stream, ENCODING));
         String line;
-        try {
-            while ((line = br.readLine()) != null) {
-                sb.append(line).append("\r\n");
-            }
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        while ((line = br.readLine()) != null) {
+            sb.append(line).append("\r\n");
         }
+        br.close();
         return sb.toString();
     }
 
