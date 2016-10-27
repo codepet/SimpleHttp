@@ -13,11 +13,16 @@ public class Request {
 
     private static final int CONNECT_TIME_OUT_MILLISECOND = 10000;
     private static final int READ_TIME_OUT_MILLISECOND = 20000;
-    public static final String ENCODING = "UTF-8";
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String ACCEPT_CHARSET = "Accept-Charset";
+    private static final String TYPE_TEXT_HTML = "text/html";
+    private static final String TYPE_JSON = "application/json";
 
     private String url;
+    private String encode;
     private List<String> params;
     private List<String> headers;
+    private String tag;
     private String string;
     private HttpMethod method;
 
@@ -26,6 +31,8 @@ public class Request {
 
     private Request(Builder builder) {
         this.url = builder.url;
+        this.encode = builder.encode;
+        this.tag = builder.tag;
         this.params = builder.params;
         this.headers = builder.headers;
         this.method = builder.method;
@@ -65,9 +72,13 @@ public class Request {
      * get请求
      */
     private void get() throws IOException {
-        URL requestUrl = new URL(getUrl(url));
+        URL requestUrl = new URL(spliceUrl(url));
         connection = (HttpURLConnection) requestUrl.openConnection();
         connection.setRequestMethod(String.valueOf(method));
+        connection.setRequestProperty(ACCEPT_CHARSET, encode);
+        connection.setRequestProperty(CONTENT_TYPE, encode);
+        connection.setRequestProperty(CONTENT_TYPE, TYPE_TEXT_HTML);
+        connection.setRequestProperty(CONTENT_TYPE, TYPE_JSON);
         connection.setConnectTimeout(CONNECT_TIME_OUT_MILLISECOND);
         connection.setReadTimeout(READ_TIME_OUT_MILLISECOND);
         connection.setDoInput(true);
@@ -79,7 +90,7 @@ public class Request {
     /*
      * get请求拼接url
      */
-    private String getUrl(String url) {
+    private String spliceUrl(String url) {
         StringBuilder sb = new StringBuilder();
         sb.append(url).append("?");
         for (int i = 0; i < params.size(); i += 2) {
@@ -99,6 +110,10 @@ public class Request {
         URL requestUrl = new URL(url);
         connection = (HttpURLConnection) requestUrl.openConnection();
         connection.setRequestMethod(String.valueOf(method));
+        connection.setRequestProperty(ACCEPT_CHARSET, encode);
+        connection.setRequestProperty(CONTENT_TYPE, encode);
+        connection.setRequestProperty(CONTENT_TYPE, TYPE_TEXT_HTML);
+        connection.setRequestProperty(CONTENT_TYPE, TYPE_JSON);
         connection.setConnectTimeout(CONNECT_TIME_OUT_MILLISECOND);
         connection.setReadTimeout(READ_TIME_OUT_MILLISECOND);
         connection.setDoInput(true);
@@ -130,7 +145,7 @@ public class Request {
                 sb.append("&");
             }
             sb.deleteCharAt(sb.length() - 1);
-            connection.getOutputStream().write(sb.toString().getBytes(ENCODING));
+            connection.getOutputStream().write(sb.toString().getBytes(encode));
         }
     }
 
@@ -139,7 +154,7 @@ public class Request {
      */
     private void postString() throws IOException {
         if (string != null && !string.isEmpty()) {
-            connection.getOutputStream().write(string.getBytes(ENCODING));
+            connection.getOutputStream().write(string.getBytes(encode));
         }
     }
 
@@ -175,7 +190,7 @@ public class Request {
      */
     private String getResponseBody(InputStream stream) throws IOException {
         StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(stream, ENCODING));
+        BufferedReader br = new BufferedReader(new InputStreamReader(stream, encode));
         String line;
         while ((line = br.readLine()) != null) {
             sb.append(line).append("\r\n");
@@ -184,9 +199,27 @@ public class Request {
         return sb.toString();
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public String getEncode() {
+        return encode;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public String getRequestMethod() {
+        return String.valueOf(method);
+    }
+
     public static class Builder {
 
         private String url;
+        private String encode = "UTF-8";
+        private String tag = "";
         private List<String> params = new ArrayList<>();
         private List<String> headers = new ArrayList<>();
         private HttpMethod method = HttpMethod.GET;
@@ -197,6 +230,16 @@ public class Request {
                 throw new IllegalArgumentException("url can not be null or empty");
             }
             this.url = url;
+            return this;
+        }
+
+        public Builder encode(String encode) {
+            this.encode = encode;
+            return this;
+        }
+
+        public Builder tag(String tag) {
+            this.tag = tag;
             return this;
         }
 
